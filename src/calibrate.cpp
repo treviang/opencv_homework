@@ -8,7 +8,7 @@
 #include <opencv2/calib3d/calib3d.hpp>
 
 //show help information
-int print_help() 
+int print_help()
 {
 	std::cout << "*******************************************************" << std::endl;
 	std::cout << "Stereo Calibration Camera:" << std::endl;
@@ -31,7 +31,7 @@ void getFiles(std::string path,std::vector<std::string> &files) //
 	if ((dp = readdir(dirp)) != NULL) {
 		if(strcmp(dp->d_name, ".")!=0 && strcmp(dp->d_name, "..")!=0)
 			files.push_back(dp->d_name); //save filename in files
-		} 
+		}
 	else{
 		closedir(dirp);
 		dirp = NULL;
@@ -41,7 +41,7 @@ void getFiles(std::string path,std::vector<std::string> &files) //
 
 int main(int argc, char** argv){
 	//default path to left and right calibration images
-	std::string dataset_path="../../dataset/calibration";
+	std::string dataset_path="../dataset/calibration";
 
 	//manage command line options
 	if(argc==2 && (std::string(argv[1])=="-h" || std::string(argv[1])=="--help")) //help command
@@ -56,12 +56,12 @@ int main(int argc, char** argv){
         if ((std::string(argv[i]) == "--data") || std::string(argv[i]) == "-d") {
             if (i + 1 < argc) { // Make sure we aren't at the end of argv!
                 dataset_path = argv[i+1]; //update dataset_path
-            	} 
+            	}
             else { //bad argument
                 std::cerr << "Invalid argument! type -h or --help for more information" << std::endl;
                 return 1;
-            	}  
-        	}	
+            	}
+        	}
     	}
 	}
 	//parameters
@@ -74,10 +74,10 @@ int main(int argc, char** argv){
     int numCornersVer=6;	//vertical
 
     int numSquares = numCornersHor * numCornersVer;  //number of squares in the cessboard
-    
+
     cv::Size board_sz = cv::Size(numCornersHor, numCornersVer); //pattern size
     cv::Size winSize = cv::Size(5,5); //search window used in cornerSubPix
-    cv::Size zeroZone = cv::Size(-1,-1); //size of the dead region if (-1,-1) there is not a size 
+    cv::Size zeroZone = cv::Size(-1,-1); //size of the dead region if (-1,-1) there is not a size
 
     //vectors of chessboard corners for left calibration, right calibration and stereo calibration
     std::vector<std::vector<cv::Point2f> > leftImagePoints;
@@ -89,7 +89,7 @@ int main(int argc, char** argv){
     std::vector<std::vector<cv::Point3f> >  leftObjectPoints;
     std::vector<std::vector<cv::Point3f> >  rightObjectPoints;
     std::vector<std::vector<cv::Point3f> >  objectPoints;
-    
+
    	cv::Mat leftDistCoeffs,rightDistCoeffs; //left and right distortion coefficient
     std::vector<cv::Mat> leftRvecs,leftTvecs,rightRvecs,rightTvecs; //left and right rotation and traslation vectors
     cv::Mat img,img_gray;//Mat to load images and fin chessboard corners
@@ -103,8 +103,8 @@ int main(int argc, char** argv){
     	}
 
     if(argc>2){ //default path has changed
-    	std::vector<std::string> files; 
-		std::string leftPath = dataset_path; 
+    	std::vector<std::string> files;
+		std::string leftPath = dataset_path;
 		std::string rightPath = dataset_path;
 		std::size_t foundLeft; //found left directory
 		std::size_t foundRight; //found right directory
@@ -153,7 +153,7 @@ int main(int argc, char** argv){
 	cv::FileNode imL = fs["images_left"]; //find node images_left in images.xml
 	cv::FileNodeIterator currentImageLeft = imL.begin(); //iterator to current image
     cv::FileNodeIterator lastImageLeft = imL.end(); //iterator to last image
-   
+
     std::cout <<"Start left camera calibration" << std::endl;
     std::vector<bool> left_found; //corners found
     std::vector<cv::Point2f> left_corners; //this will be filled by the detected left corners of actual image
@@ -164,7 +164,7 @@ int main(int argc, char** argv){
 
 		std::cout <<"Processing " << ((std::string)*currentImageLeft).substr(((std::string)*currentImageLeft).size()-17, 50);
 		img = cv::imread((std::string)*currentImageLeft); //read actual image
-		
+
 		left_found.push_back(findChessboardCorners(img, board_sz, left_corners,cv::CALIB_CB_ADAPTIVE_THRESH | cv::CALIB_CB_NORMALIZE_IMAGE | cv::CALIB_CB_FAST_CHECK));
 
 		if (left_found.at(numImg))  // If done with success,
@@ -186,13 +186,13 @@ int main(int argc, char** argv){
     	++numImg;
     }
     cv::Mat leftCameraMatrix = cv::Mat(3, 3,  CV_32FC1); //3x3 floating-point camera matrix
-    leftDistCoeffs = cv::Mat::zeros(8, 1, CV_64F); //8x1 vector of distortion coefficients 
-	
+    leftDistCoeffs = cv::Mat::zeros(8, 1, CV_64F); //8x1 vector of distortion coefficients
+
     double left_error = calibrateCamera(leftObjectPoints, leftImagePoints, img.size(), leftCameraMatrix,
                                  leftDistCoeffs, leftRvecs, leftTvecs);
 
     timeLeft=clock()-init; //time of left calibration
-	
+
 	std::cout<<"Left calibration done in " <<(double)timeLeft / ((double)CLOCKS_PER_SEC) <<" seconds." <<std::endl;
 	std::cout <<error <<" images failed to find chessboard corners." <<std::endl;
 	std::cout<<"Calibration Error: "<<left_error<<std::endl;
@@ -211,7 +211,7 @@ int main(int argc, char** argv){
 
 		std::cout <<"Processing " << ((std::string)*currentImageRight).substr(((std::string)*currentImageRight).size()-18, 50);
 		img = cv::imread((std::string)*currentImageRight); //read actual image
-	
+
 		right_found.push_back(findChessboardCorners(img, board_sz, right_corners,cv::CALIB_CB_ADAPTIVE_THRESH | cv::CALIB_CB_NORMALIZE_IMAGE | cv::CALIB_CB_FAST_CHECK));
 
 		if (right_found.at(numImg))  // If done with success,
@@ -227,7 +227,7 @@ int main(int argc, char** argv){
         	std::cout <<" ERR"<< std::endl;
         	error++;
         }
- 
+
     	stereoRightImagePoints.push_back(right_corners);
     	++currentImageRight;
     	++numImg;
@@ -241,19 +241,19 @@ int main(int argc, char** argv){
                                  rightDistCoeffs, rightRvecs, rightTvecs);
 
     timeRight=clock()-timeLeft; //time of right calibration
-	
+
 	std::cout<<"Right calibration done in " <<(double)timeRight / ((double)CLOCKS_PER_SEC) <<" seconds." <<std::endl;
 	std::cout <<error <<" images failed to find chessboard corners." <<std::endl;
 	std::cout<<"Calibration Error: "<<right_error<<std::endl;
 
     /// calibrate stereo
-	
+
 	// prune left corners and right corners so that they contain only stereo-couples in which the pattern has been found both on left and right images.
 	for(int i=0;i<std::min(left_found.size(), right_found.size());++i){
 		if(!(left_found[i] && right_found[i])){
 			stereoLeftImagePoints.erase(stereoLeftImagePoints.begin() + i);
 			stereoRightImagePoints.erase(stereoRightImagePoints.begin() + i);
-			objectPoints.erase(objectPoints.begin() + i);	
+			objectPoints.erase(objectPoints.begin() + i);
 		}
 	}
 
@@ -261,12 +261,12 @@ int main(int argc, char** argv){
 	cv::Mat T;	// Translation vector between the coordinate systems of the cameras
 	cv::Mat E;	// Essential matrix
 	cv::Mat F;	// Fundamental matrix
-	
+
 	double stereo_error = cv::stereoCalibrate(
-		objectPoints, stereoLeftImagePoints, stereoRightImagePoints, 
-		leftCameraMatrix, leftDistCoeffs, rightCameraMatrix, rightDistCoeffs, 
-		img.size(), 
-		R, T, E, F, 
+		objectPoints, stereoLeftImagePoints, stereoRightImagePoints,
+		leftCameraMatrix, leftDistCoeffs, rightCameraMatrix, rightDistCoeffs,
+		img.size(),
+		R, T, E, F,
 		cv::TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 30, 1e-6), cv::CALIB_USE_INTRINSIC_GUESS);
 
 	//print stereo calibration time
@@ -280,7 +280,7 @@ int main(int argc, char** argv){
 	cv::Mat P1;		// 3x4 projection matrix in the new (rectified) coordinate systems for the first camera
 	cv::Mat P2;		// 3x4 projection matrix in the new (rectified) coordinate systems for the second camera
 	cv::Mat Q;		// 4x4 disparity-to-depth mapping matrix
-	
+
 	stereoRectify(leftCameraMatrix, leftDistCoeffs, rightCameraMatrix, rightDistCoeffs, img.size(), R, T, R1, R2, P1, P2, Q);
 
 	///save results
